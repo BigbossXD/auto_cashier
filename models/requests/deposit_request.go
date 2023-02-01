@@ -1,7 +1,8 @@
 package requests
 
 type DepositRequest struct {
-	Items []depositItemRequest `json:"items" validate:"required"`
+	MachineId uint                 `json:"machine_id" validate:"required,number"`
+	Items     []depositItemRequest `json:"items" validate:"required"`
 }
 type depositItemRequest struct {
 	ID     uint  `json:"config_id" validate:"required,number"`

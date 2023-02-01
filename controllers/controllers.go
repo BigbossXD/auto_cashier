@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -18,8 +17,19 @@ import (
 
 func GetMaximum(c echo.Context) error {
 
+	machineId := c.QueryParam("machineId")
+	machineIdBind, err := strconv.Atoi(machineId)
+	if err != nil {
+		utils.Logger.Sugar().Error("Invalid machineId")
+		response := responses.ErrorBaseResponse{
+			Code:    "00404",
+			Message: "Invalid machineId",
+		}
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
 	configs := []models.CashierConfigs{}
-	result := orm.Db.Order("money_value DESC").Find(&configs)
+	result := orm.Db.Order("money_value DESC").Where("machine_id = ?", machineIdBind).Find(&configs)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{
@@ -67,10 +77,10 @@ func Deposit(c echo.Context) error {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
 		if result.Error != nil {
-			utils.Logger.Sugar().Error(err.Error())
+			utils.Logger.Sugar().Error(result.Error.Error())
 			response := responses.ErrorBaseResponse{
 				Code:    "00402",
-				Message: err.Error(),
+				Message: result.Error.Error(),
 			}
 			return c.JSON(http.StatusBadRequest, response)
 		}
@@ -92,10 +102,10 @@ func Deposit(c echo.Context) error {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
 		if result.Error != nil {
-			utils.Logger.Sugar().Error(err.Error())
+			utils.Logger.Sugar().Error(result.Error.Error())
 			response := responses.ErrorBaseResponse{
 				Code:    "00502",
-				Message: err.Error(),
+				Message: result.Error.Error(),
 			}
 			return c.JSON(http.StatusBadRequest, response)
 		}
@@ -106,6 +116,7 @@ func Deposit(c echo.Context) error {
 
 		if v.Amount > 0 {
 			transection := &models.CashierTransections{}
+			transection.MachineId = depositRequest.MachineId
 			transection.SessionId = SessionId
 			transection.Type = models.DEPOSIT
 			transection.MoneyValue = configs.MoneyValue
@@ -116,7 +127,7 @@ func Deposit(c echo.Context) error {
 	}
 
 	configsAll := []models.CashierConfigs{}
-	result := orm.Db.Find(&configsAll)
+	result := orm.Db.Where("machine_id = ?", depositRequest.MachineId).Find(&configsAll)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{
@@ -165,7 +176,7 @@ func Withdraw(c echo.Context) error {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
 		if result.Error != nil {
-			utils.Logger.Sugar().Error(err.Error())
+			utils.Logger.Sugar().Error(result.Error.Error())
 			response := responses.ErrorBaseResponse{
 				Code:    "00402",
 				Message: err.Error(),
@@ -190,10 +201,10 @@ func Withdraw(c echo.Context) error {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
 		if result.Error != nil {
-			utils.Logger.Sugar().Error(err.Error())
+			utils.Logger.Sugar().Error(result.Error.Error())
 			response := responses.ErrorBaseResponse{
 				Code:    "00502",
-				Message: err.Error(),
+				Message: result.Error.Error(),
 			}
 			return c.JSON(http.StatusBadRequest, response)
 		}
@@ -204,6 +215,7 @@ func Withdraw(c echo.Context) error {
 
 		if v.Amount > 0 {
 			transection := &models.CashierTransections{}
+			transection.MachineId = withdrawRequest.MachineId
 			transection.SessionId = SessionId
 			transection.Type = models.WITHDRAW
 			transection.MoneyValue = configs.MoneyValue
@@ -214,7 +226,7 @@ func Withdraw(c echo.Context) error {
 	}
 
 	configsAll := []models.CashierConfigs{}
-	result := orm.Db.Find(&configsAll)
+	result := orm.Db.Where("machine_id = ?", withdrawRequest.MachineId).Find(&configsAll)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{
@@ -264,10 +276,10 @@ func Receive(c echo.Context) error {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
 		if result.Error != nil {
-			utils.Logger.Sugar().Error(err.Error())
+			utils.Logger.Sugar().Error(result.Error.Error())
 			response := responses.ErrorBaseResponse{
 				Code:    "00402",
-				Message: err.Error(),
+				Message: result.Error.Error(),
 			}
 			return c.JSON(http.StatusBadRequest, response)
 		}
@@ -295,7 +307,7 @@ func Receive(c echo.Context) error {
 	}
 
 	configsAll := []models.CashierConfigs{}
-	result := orm.Db.Find(&configsAll)
+	result := orm.Db.Order("money_value DESC").Where("machine_id = ?", receiveRequest.MachineId).Find(&configsAll)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{
@@ -322,10 +334,10 @@ func Receive(c echo.Context) error {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
 		if result.Error != nil {
-			utils.Logger.Sugar().Error(err.Error())
+			utils.Logger.Sugar().Error(result.Error.Error())
 			response := responses.ErrorBaseResponse{
 				Code:    "00505",
-				Message: err.Error(),
+				Message: result.Error.Error(),
 			}
 			return c.JSON(http.StatusBadRequest, response)
 		}
@@ -335,6 +347,7 @@ func Receive(c echo.Context) error {
 
 		if v.Amount > 0 {
 			transection := &models.CashierTransections{}
+			transection.MachineId = receiveRequest.MachineId
 			transection.SessionId = SessionId
 			transection.Type = models.RECEIVE
 			transection.MoneyValue = configs.MoneyValue
@@ -347,10 +360,10 @@ func Receive(c echo.Context) error {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
 		if result.Error != nil {
-			utils.Logger.Sugar().Error(err.Error())
+			utils.Logger.Sugar().Error(result.Error.Error())
 			response := responses.ErrorBaseResponse{
 				Code:    "00505",
-				Message: err.Error(),
+				Message: result.Error.Error(),
 			}
 			return c.JSON(http.StatusBadRequest, response)
 		}
@@ -360,6 +373,7 @@ func Receive(c echo.Context) error {
 
 		if v.Amount > 0 {
 			transection := &models.CashierTransections{}
+			transection.MachineId = receiveRequest.MachineId
 			transection.SessionId = SessionId
 			transection.Type = models.CHANGE
 			transection.MoneyValue = configs.MoneyValue
@@ -384,9 +398,20 @@ func GetTransection(c echo.Context) error {
 	if err == nil {
 		limit = limitBind
 	}
-	fmt.Println(limit)
+
+	machineId := c.QueryParam("machineId")
+	machineIdBind, err := strconv.Atoi(machineId)
+	if err != nil {
+		utils.Logger.Sugar().Error("Invalid machineId")
+		response := responses.ErrorBaseResponse{
+			Code:    "00404",
+			Message: "Invalid machineId",
+		}
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
 	transections := []models.CashierTransections{}
-	result := orm.Db.Order("created_at desc").Limit(limit).Find(&transections)
+	result := orm.Db.Where("machine_id = ?", machineIdBind).Order("created_at desc").Limit(limit).Find(&transections)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{

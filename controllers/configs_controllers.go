@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/BigbossXD/auto_cashier/models"
 	"github.com/BigbossXD/auto_cashier/models/requests"
@@ -15,8 +16,19 @@ import (
 
 func FindConfig(c echo.Context) error {
 
+	machineId := c.QueryParam("machineId")
+	machineIdBind, err := strconv.Atoi(machineId)
+	if err != nil {
+		utils.Logger.Sugar().Error("Invalid machineId")
+		response := responses.ErrorBaseResponse{
+			Code:    "00404",
+			Message: "Invalid machineId",
+		}
+		return c.JSON(http.StatusBadRequest, response)
+	}
+
 	configs := []models.CashierConfigs{}
-	result := orm.Db.Find(&configs)
+	result := orm.Db.Where("machine_id = ?", machineIdBind).Find(&configs)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{
@@ -62,9 +74,10 @@ func CreateConfig(c echo.Context) error {
 
 	}
 
-	result := orm.Db.Where("money_value = ?", createConfigRequest.MoneyValue).First(&configs)
+	result := orm.Db.Where("money_value = ? and machine_id = ?", createConfigRequest.MoneyValue, createConfigRequest.MachineId).First(&configs)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
+			configs.MachineId = createConfigRequest.MachineId
 			configs.MoneyValue = createConfigRequest.MoneyValue
 			configs.MaximumAmount = createConfigRequest.MaximumAmount
 			configs.CurrentAmount = 0
@@ -143,11 +156,11 @@ func UpdateConfig(c echo.Context) error {
 
 func DeleteConfig(c echo.Context) error {
 
-	adminId := c.Param("id")
+	configId := c.Param("id")
 
 	configs := &models.CashierConfigs{}
 
-	result := orm.Db.Where("id = ?", adminId).First(&configs)
+	result := orm.Db.Where("id = ?", configId).First(&configs)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{

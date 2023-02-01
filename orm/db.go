@@ -33,25 +33,41 @@ func InitDB() {
 	Db.AutoMigrate(
 		&models.CashierConfigs{},
 		&models.CashierTransections{},
+		&models.Machine{},
 	)
 
-	// Init Configs
-	moneyValue := []float32{1000, 500, 100, 50, 20, 10, 5, 1, 0.25}
-	maximumAmount := []int32{10, 20, 15, 20, 30, 20, 20, 20, 50}
-	for i, v := range moneyValue {
-		configs := &models.CashierConfigs{}
-		result := Db.Where("money_value = ?", v).First(&configs)
+	// Init Configs 3 Machine
+	for m := 1; m <= 3; m++ {
+
+		machine := &models.Machine{}
+		result := Db.Where("ID = ?", m).First(&machine)
 		if result.Error != nil {
 			if result.Error == gorm.ErrRecordNotFound {
-				configs.MoneyValue = v
-				configs.MaximumAmount = maximumAmount[i]
-				configs.CurrentAmount = 0
-				Db.Save(configs)
+				machine.Name = "test00" + string(rune(m))
+				Db.Save(machine)
 			} else {
 				panic(result.Error.Error())
 			}
 		}
 
+		moneyValue := []float32{1000, 500, 100, 50, 20, 10, 5, 1, 0.25}
+		maximumAmount := []int32{10, 20, 15, 20, 30, 20, 20, 20, 50}
+		for i, v := range moneyValue {
+			configs := &models.CashierConfigs{}
+			result := Db.Where("money_value = ? and machine_id = ?", v, m).First(&configs)
+			if result.Error != nil {
+				if result.Error == gorm.ErrRecordNotFound {
+					configs.MachineId = uint(m)
+					configs.MoneyValue = v
+					configs.MaximumAmount = maximumAmount[i]
+					configs.CurrentAmount = 0
+					Db.Save(configs)
+				} else {
+					panic(result.Error.Error())
+				}
+			}
+
+		}
 	}
 
 }

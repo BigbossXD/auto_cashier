@@ -1,8 +1,9 @@
 package requests
 
 type ReceiveRequest struct {
-	Price float32              `json:"price" validate:"required"`
-	Items []receiveItemRequest `json:"items" validate:"required"`
+	MachineId uint                 `json:"machine_id" validate:"required,number"`
+	Price     float32              `json:"price" validate:"required"`
+	Items     []receiveItemRequest `json:"items" validate:"required"`
 }
 
 type receiveItemRequest struct {

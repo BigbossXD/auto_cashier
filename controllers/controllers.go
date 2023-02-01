@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/BigbossXD/auto_cashier/models"
 	"github.com/BigbossXD/auto_cashier/models/requests"
@@ -11,15 +12,14 @@ import (
 	"github.com/BigbossXD/auto_cashier/orm"
 	"github.com/BigbossXD/auto_cashier/utils"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
-
-var validate *validator.Validate
 
 func GetMaximum(c echo.Context) error {
 
 	configs := []models.CashierConfigs{}
-	result := orm.Db.Find(&configs)
+	result := orm.Db.Order("money_value DESC").Find(&configs)
 	if result.Error != nil {
 		utils.Logger.Sugar().Error(result.Error.Error())
 		response := responses.ErrorBaseResponse{
@@ -86,6 +86,8 @@ func Deposit(c echo.Context) error {
 
 	}
 
+	SessionId := uuid.New().String()
+
 	for _, v := range depositRequest.Items {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
@@ -101,6 +103,15 @@ func Deposit(c echo.Context) error {
 		configs.ID = v.ID
 		configs.CurrentAmount = configs.CurrentAmount + v.Amount
 		orm.Db.Save(configs)
+
+		if v.Amount > 0 {
+			transection := &models.CashierTransections{}
+			transection.SessionId = SessionId
+			transection.Type = models.DEPOSIT
+			transection.MoneyValue = configs.MoneyValue
+			transection.Amount = v.Amount
+			orm.Db.Save(transection)
+		}
 
 	}
 
@@ -173,6 +184,8 @@ func Withdraw(c echo.Context) error {
 
 	}
 
+	SessionId := uuid.New().String()
+
 	for _, v := range withdrawRequest.Items {
 		configs := &models.CashierConfigs{}
 		result := orm.Db.Where("ID = ?", v.ID).First(&configs)
@@ -188,6 +201,15 @@ func Withdraw(c echo.Context) error {
 		configs.ID = v.ID
 		configs.CurrentAmount = configs.CurrentAmount - v.Amount
 		orm.Db.Save(configs)
+
+		if v.Amount > 0 {
+			transection := &models.CashierTransections{}
+			transection.SessionId = SessionId
+			transection.Type = models.WITHDRAW
+			transection.MoneyValue = configs.MoneyValue
+			transection.Amount = v.Amount
+			orm.Db.Save(transection)
+		}
 
 	}
 
@@ -264,10 +286,10 @@ func Receive(c echo.Context) error {
 	}
 
 	if receiveTotal < receiveRequest.Price {
-		utils.Logger.Sugar().Error("not paying enough!")
+		utils.Logger.Sugar().Error("not enough change!")
 		response := responses.ErrorBaseResponse{
 			Code:    "00403",
-			Message: "not paying enough!",
+			Message: "not enough change!",
 		}
 		return c.JSON(http.StatusBadRequest, response)
 	}
@@ -288,11 +310,13 @@ func Receive(c echo.Context) error {
 	if !flag {
 		utils.Logger.Sugar().Error("not enough change!")
 		response := responses.ErrorBaseResponse{
-			Code:    "00504",
+			Code:    "00403",
 			Message: "not enough change!",
 		}
 		return c.JSON(http.StatusBadRequest, response)
 	}
+
+	SessionId := uuid.New().String()
 
 	for _, v := range receiveRequest.Items {
 		configs := &models.CashierConfigs{}
@@ -308,6 +332,15 @@ func Receive(c echo.Context) error {
 		configs.ID = v.ID
 		configs.CurrentAmount = configs.CurrentAmount + v.Amount
 		orm.Db.Save(configs)
+
+		if v.Amount > 0 {
+			transection := &models.CashierTransections{}
+			transection.SessionId = SessionId
+			transection.Type = models.RECEIVE
+			transection.MoneyValue = configs.MoneyValue
+			transection.Amount = v.Amount
+			orm.Db.Save(transection)
+		}
 	}
 
 	for _, v := range change {
@@ -324,6 +357,15 @@ func Receive(c echo.Context) error {
 		configs.ID = v.ID
 		configs.CurrentAmount = configs.CurrentAmount - v.Amount
 		orm.Db.Save(configs)
+
+		if v.Amount > 0 {
+			transection := &models.CashierTransections{}
+			transection.SessionId = SessionId
+			transection.Type = models.CHANGE
+			transection.MoneyValue = configs.MoneyValue
+			transection.Amount = v.Amount
+			orm.Db.Save(transection)
+		}
 	}
 
 	response := responses.SuccessBaseResponse{
@@ -333,6 +375,34 @@ func Receive(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, response)
 
+}
+
+func GetTransection(c echo.Context) error {
+	limit := 100
+	limitQuery := c.QueryParam("limit")
+	limitBind, err := strconv.Atoi(limitQuery)
+	if err == nil {
+		limit = limitBind
+	}
+	fmt.Println(limit)
+	transections := []models.CashierTransections{}
+	result := orm.Db.Order("created_at desc").Limit(limit).Find(&transections)
+	if result.Error != nil {
+		utils.Logger.Sugar().Error(result.Error.Error())
+		response := responses.ErrorBaseResponse{
+			Code:    "00402",
+			Message: result.Error.Error(),
+		}
+		return c.JSON(http.StatusBadRequest, response)
+
+	}
+
+	response := responses.SuccessBaseResponse{
+		Code:    "00000",
+		Message: "Success",
+		Data:    transections,
+	}
+	return c.JSON(http.StatusOK, response)
 }
 
 func calulateChange(priceTotal float32, reciveTotal float32, configs []models.CashierConfigs) ([]responses.ChangeItemRequest, bool) {
@@ -354,9 +424,6 @@ func calulateChange(priceTotal float32, reciveTotal float32, configs []models.Ca
 		}
 	}
 
-	fmt.Println("moneyChange", " => ", moneyChange)
-	fmt.Println("checkChange", " => ", checkChange)
-	fmt.Println("Change List", " => ", change)
 	if moneyChange <= 0 {
 		return change, true
 	}

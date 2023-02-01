@@ -32,6 +32,7 @@ func InitDB() {
 	// Migrate the schema
 	Db.AutoMigrate(
 		&models.CashierConfigs{},
+		&models.CashierTransections{},
 	)
 
 	// Init Configs

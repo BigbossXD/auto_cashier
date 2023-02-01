@@ -25,6 +25,12 @@ func main() {
 
 	e := echo.New()
 
+	// /* CORS */
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
+
 	// e.Use(middlewares.CheckXApiKey)
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
@@ -38,11 +44,10 @@ func main() {
 		},
 	}))
 
+	apiV1Prefix := "api/v1"
 
-	apiV2Prefix := "api/v2"
-	routes.InitRoutes(e, apiV2Prefix)
-
-
+	routes.InitConfigsRoutes(e, apiV1Prefix)
+	routes.InitRoutes(e, apiV1Prefix)
 
 	e.Logger.Fatal(e.Start(":" + appPort))
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/BigbossXD/auto_cashier/orm"
+	"github.com/BigbossXD/auto_cashier/routes"
 	"github.com/BigbossXD/auto_cashier/utils"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -37,10 +38,11 @@ func main() {
 		},
 	}))
 
-	/* Routers Public */
-	// apiPrefix := "api/v1"
-	// images_routers.InitImagesRoutes(e, apiPrefix)
-	/* Routers Public*/
+
+	apiV2Prefix := "api/v2"
+	routes.InitRoutes(e, apiV2Prefix)
+
+
 
 	e.Logger.Fatal(e.Start(":" + appPort))
 }

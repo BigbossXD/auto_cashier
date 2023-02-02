@@ -49,6 +49,7 @@ func main() {
 	routes.InitConfigsRoutes(e, apiV1Prefix)
 	routes.InitRoutes(e, apiV1Prefix)
 	routes.InitMachineRoutes(e, apiV1Prefix)
+	routes.InitTransectionRoutes(e, apiV1Prefix)
 
 	e.Logger.Fatal(e.Start(":" + appPort))
 }

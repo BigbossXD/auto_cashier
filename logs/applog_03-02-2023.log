@@ -1,0 +1,10 @@
+{"level":"info","timestamp":"2023-02-03T00:14:18.096+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/configs?machineId=1","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:18.097+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/configs?machineId=1","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:20.045+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/maximum?machineId=1","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:20.046+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/maximum?machineId=1","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:20.519+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/maximum?machineId=1","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:20.520+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/maximum?machineId=1","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:21.308+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/transections?machineId=1&limit=100","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:21.311+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/transections?machineId=1&limit=100","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:27.404+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/maximum?machineId=1","status":200}
+{"level":"info","timestamp":"2023-02-03T00:14:27.405+0700","caller":"auto_cashier/main.go:39","msg":"request","URI":"/api/v1/maximum?machineId=1","status":200}

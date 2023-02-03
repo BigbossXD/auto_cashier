@@ -1,10 +1,19 @@
 # Auto Cashier
 Auto Cashier System with Go
 
+#### Database Mysql
+#### Create database name auto_cashier
+#### Follow .env
+[.env](https://github.com/BigbossXD/auto_cashier/blob/main/.env)
+
+
 cd {target} && go run .
 
 # API SPEC
 [API SPEC](https://github.com/BigbossXD/auto_cashier/blob/main/documents/Auto%20Cashier%20API%20Spec.xlsx)
+
+# Postman Collections
+[Postman Collections](https://github.com/BigbossXD/auto_cashier/blob/main/documents/Auto%20Cashier.postman_collection.json)
 
 # Design
 ![Image](https://github.com/BigbossXD/auto_cashier/blob/main/documents/software_design.png?raw=true)
@@ -12,9 +21,6 @@ cd {target} && go run .
 ![Image](https://github.com/BigbossXD/auto_cashier/blob/main/documents/auto_cashier-System%20Flow%20User%20Payment.drawio.png?raw=true)
 
 ![Image](https://github.com/BigbossXD/auto_cashier/blob/main/documents/auto_cashier-System%20Flow%20Admin%20Flow.drawio.png?raw=true)
-
-# Database Diagram
-![Image](https://github.com/BigbossXD/auto_cashier/blob/main/documents/db_diagram.png?raw=true)
 
 # Database Diagram
 ![Image](https://github.com/BigbossXD/auto_cashier/blob/main/documents/db_diagram.png?raw=true)

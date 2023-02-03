@@ -28,7 +28,7 @@ type CashierTransections struct {
 	gorm.Model
 	MachineId  uint            `gorm:"not null" json:"machine_id"`
 	SessionId  string          `gorm:"type:varchar(255);not null" json:"session_id"`
-	Type       TransectionType `gorm:"type:ENUM('RECEIVE', 'CHANGE', 'DEPOSIT', 'WITHDRAW')" gorm:"column:car_type"`
+	Type       TransectionType `gorm:"type:ENUM('RECEIVE', 'CHANGE', 'DEPOSIT', 'WITHDRAW')"`
 	MoneyValue float32         `gorm:"type:decimal(10,2);not null" json:"money_value"`
 	Amount     int32           `gorm:"not null" json:"amount"`
 }
